@@ -4,15 +4,15 @@
 
 ## Team
 
-**Team Name:** [Team Name]
+**Team Name:** [Team QT]
 
 
 | Member | Contribution   |
 | ------ | -------------- |
-| [Name] | [Contribution] |
-| [Name] | [Contribution] |
-| [Name] | [Contribution] |
-| [Name] | [Contribution] |
+| Sandeep Kumar S | [Contribution] |
+| Neil Ganguly | [Contribution] |
+| Dinesh Karthik | [Contribution] |
+| Monisa Reddy | [Contribution] |
 
 
 ## Problem Statement
@@ -75,10 +75,10 @@ If a category or technology is not implemented in the project, specify `N/A` ins
 
 ### Team Contributions
 
-- **[Member Name]:** [Contribution]
-- **[Member Name]:** [Contribution]
-- **[Member Name]:** [Contribution]
-- **[Member Name]:** [Contribution]
+- **[Sandeep Kumar S]:** [Contribution]
+- **[Neil Ganguly]:** [Contribution]
+- **[Dinesh Karthik]:** [Contribution]
+- **[Monisa Reddy]:** [Contribution]
 
 ## Working Application
 
@@ -160,7 +160,7 @@ cd [project-directory]
 ## Submission Checklist
 
 - [ ] Project title and description added
-- [ ] All team members listed
+- [x] All team members listed
 - [ ] Problem clearly explained
 - [ ] Reason for choosing the problem explained
 - [ ] Solution and key features documented
