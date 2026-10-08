@@ -90,15 +90,14 @@ The submitted application should be functional and accessible through the provid
 
 ## Demo Video
 
-**Demo Video:** [Video URL]
-
-[Provide a short demonstration of the working project, covering the main user flow and important functionality.]
+**Demo Video:** [https://www.youtube.com/watch?v=Uyxmk9NL_sI]
 
 ## Open Source and AI Usage
 
 ### AI / Models
 
-- **[Model]:** [How it is used]
+- **Gemini:** [Gemini was used to correct syntax and generate a flowchart of how the work progresses]
+- **Antigravity:** [Used for making the frontend and backend of the application.]
 
 ### Open Source Components
 
@@ -159,19 +158,19 @@ cd [project-directory]
 
 ## Submission Checklist
 
-- [ ] Project title and description added
+- [x] Project title and description added
 - [x] All team members listed
-- [ ] Problem clearly explained
-- [ ] Reason for choosing the problem explained
-- [ ] Solution and key features documented
+- [x] Problem clearly explained
+- [x] Reason for choosing the problem explained
+- [x] Solution and key features documented
 - [ ] Innovation and differentiation explained
 - [ ] Architecture included
 - [ ] Technical implementation documented
 - [ ] Work completed during the hackathon documented
 - [ ] Team contributions documented
-- [ ] Working application is functional
+- [x] Working application is functional
 - [ ] Live application link added where applicable
-- [ ] Demo video added
+- [x] Demo video added
 - [ ] AI and open-source components documented
 - [ ] Setup and usage instructions tested
 - [ ] Challenges and learnings documented
