@@ -99,7 +99,7 @@ flowchart TD
 ---
 
 ## Working Application
-- **Local Application URL:** http://127.0.0.1:8000
+- **Local Application URL:** https://regulator-hacksaw-autism.ngrok-free.dev/
 - **Testing:** Verified end-to-end with automated Chromium browser test with mock camera device streaming.
 
 ---
