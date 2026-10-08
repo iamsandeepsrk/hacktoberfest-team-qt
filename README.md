@@ -1,6 +1,6 @@
-# [Project Name]
+# [Touch Grass]
 
-> [One-line description of the project and what it does.]
+> [Checks Posture and has a counter for every rep done in correct form]
 
 ## Team
 
@@ -9,10 +9,10 @@
 
 | Member | Contribution   |
 | ------ | -------------- |
-| Sandeep Kumar S | [Contribution] |
-| Neil Ganguly | [Contribution] |
-| Dinesh Karthik | [Contribution] |
-| Monisa Reddy | [Contribution] |
+| Sandeep Kumar S | [Front end, back end, Image processing] |
+| Neil Ganguly | [Innovation, Ideas] |
+| Dinesh Karthik | [Documentation] |
+| Monisa Reddy | [Documentation] |
 
 
 ## Problem Statement
