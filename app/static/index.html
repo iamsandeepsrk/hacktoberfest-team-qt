@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Touch Grass — Outdoor Fitness Coach</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            grass: {
+              400: '#a3e635',
+              500: '#84cc16',
+              600: '#65a30d',
+            },
+            solar: {
+              dark: '#070b14',
+              panel: '#0f172a',
+              card: '#1e293b',
+              accent: '#38bdf8'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- MediaPipe Pose & Camera Utils CDNs -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="bg-[#070b14] text-slate-100 min-h-screen flex flex-col antialiased select-none">
+
+  <!-- Main Navigation Header -->
+  <header class="border-b border-slate-800 bg-[#0f172a]/90 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-grass-500 flex items-center justify-center text-black font-black text-xl shadow-lg shadow-grass-500/20">
+          🌱
+        </div>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2">
+            TOUCH GRASS <span class="text-xs uppercase bg-grass-500/20 text-grass-400 border border-grass-500/40 px-2 py-0.5 rounded-full font-bold">Outdoor AI Coach</span>
+          </h1>
+          <p class="text-xs text-slate-400 hidden sm:block">Edge Pose Biomechanics & Hands-Free Audio Guidance</p>
+        </div>
+      </div>
+
+      <!-- Quick Toggles -->
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <!-- Audio Coach Toggle Button -->
+        <button id="toggle-audio-btn" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 bg-slate-800/80 hover:bg-slate-700 transition">
+          <span id="audio-icon">🔊</span>
+          <span id="audio-label" class="hidden sm:inline">Voice Coach: ON</span>
+        </button>
+
+        <!-- Off-Screen Battery Saver Mode Toggle -->
+        <button id="btn-screen-off" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 transition">
+          <span>🌙</span>
+          <span>Off-Screen Mode</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Left Column: Camera Viewport, HUD & Controls (8 Cols) -->
+    <section class="lg:col-span-8 flex flex-col space-y-4">
+      
+      <!-- Exercise Selection Bar -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-2 flex flex-wrap gap-2 justify-between items-center">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider px-2">Select Exercise:</span>
+        <div class="flex flex-wrap gap-1.5 flex-1 justify-end" id="exercise-selector-container">
+          <button data-exercise="squats" class="exercise-btn px-4 py-2 rounded-lg text-xs font-bold transition bg-grass-500 text-black shadow-md shadow-grass-500/20">
+            🦵 Squats
+          </button>
+          <button data-exercise="pushups" class="exercise-btn px-4 py-2 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700">
+            💪 Push-ups
+          </button>
+          <button data-exercise="pullups" class="exercise-btn px-4 py-2 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700">
+            🧗 Pull-ups
+          </button>
+          <button data-exercise="jumping_jacks" class="exercise-btn px-4 py-2 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:bg-slate-700">
+            ⚡ Jumping Jacks
+          </button>
+        </div>
+      </div>
+
+      <!-- Video Feed & HUD Viewport -->
+      <div class="viewport-container" id="viewport-box">
+        <!-- Raw Webcam Feed -->
+        <video id="webcam-video" playsinline muted autoplay></video>
+        <!-- Canvas for Skeleton & Landmark Rendering -->
+        <canvas id="output-canvas"></canvas>
+
+        <!-- Initial Placeholder State / Loading Spinner -->
+        <div id="camera-placeholder" class="absolute inset-0 bg-slate-950 flex flex-col items-center justify-center p-6 text-center z-10">
+          <div class="w-16 h-16 rounded-full border-4 border-grass-500/30 border-t-grass-400 animate-spin mb-4" id="cam-spinner"></div>
+          <h3 class="text-lg font-bold text-white mb-2" id="cam-status-title">Camera Feed Standby</h3>
+          <p class="text-xs text-slate-400 max-w-sm mb-4" id="cam-status-desc">
+            Place your device 2–3 meters away outdoors against a bench or bottle with your full body in frame.
+          </p>
+          <button id="btn-start-camera" class="px-6 py-3 bg-grass-500 hover:bg-grass-400 text-black font-black text-sm rounded-xl transition shadow-lg shadow-grass-500/30 flex items-center space-x-2">
+            <span>📷</span>
+            <span>Enable Outdoor Camera</span>
+          </button>
+        </div>
+
+        <!-- Real-time HUD Overlay -->
+        <div class="hud-overlay" id="hud-overlay" style="display: none;">
+          <!-- Top HUD: Form & Biomechanical Angle -->
+          <div class="flex justify-between items-start">
+            <div class="bg-black/80 backdrop-blur border border-slate-700/80 rounded-xl px-3.5 py-2">
+              <div class="text-[10px] uppercase font-bold text-slate-400">Target Angle</div>
+              <div class="text-lg font-black text-cyan-400 flex items-center gap-1.5" id="hud-angle-readout">
+                --°
+              </div>
+            </div>
+
+            <!-- Form Quality Badge -->
+            <div id="form-quality-badge" class="bg-grass-500/90 text-black font-black text-xs px-3.5 py-1.5 rounded-full shadow-lg transition">
+              DETECTING POSE
+            </div>
+          </div>
+
+          <!-- Bottom HUD: Massive Rep Counter & Stage -->
+          <div class="flex justify-between items-end">
+            <!-- Stage / Position Phase -->
+            <div class="bg-black/80 backdrop-blur border border-slate-700/80 rounded-xl px-4 py-2">
+              <div class="text-[10px] uppercase font-bold text-slate-400">Current Phase</div>
+              <div class="text-base sm:text-xl font-black text-white uppercase tracking-wider" id="hud-stage-label">
+                READY
+              </div>
+            </div>
+
+            <!-- Jumbo Rep Counter Display -->
+            <div class="text-right">
+              <div class="text-xs font-bold text-slate-300 uppercase tracking-widest bg-black/60 px-2 py-0.5 rounded inline-block">REPS</div>
+              <div id="hud-rep-count" class="text-7xl sm:text-8xl font-black text-grass-400 leading-none text-glow">
+                0
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Workout Action Controls -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center space-x-4">
+          <div>
+            <div class="text-[10px] uppercase text-slate-400 font-bold">Elapsed Time</div>
+            <div class="text-2xl font-mono font-black text-white" id="session-timer">00:00</div>
+          </div>
+          <div class="h-8 w-px bg-slate-800"></div>
+          <div>
+            <div class="text-[10px] uppercase text-slate-400 font-bold">Est. Calories</div>
+            <div class="text-2xl font-mono font-black text-amber-400" id="session-calories">0 kcal</div>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <!-- Reset Reps Button -->
+          <button id="btn-reset-reps" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition border border-slate-700">
+            🔄 Reset Reps
+          </button>
+
+          <!-- Complete & Log Workout Button -->
+          <button id="btn-log-workout" class="px-5 py-2.5 bg-grass-500 hover:bg-grass-400 text-black rounded-lg text-xs font-black transition shadow-lg shadow-grass-500/20 flex items-center space-x-2">
+            <span>💾</span>
+            <span>Save & Log Workout</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Column: Form Guide, Voice Settings & History Logs (4 Cols) -->
+    <aside class="lg:col-span-4 flex flex-col space-y-4">
+      
+      <!-- Audio Coach Configuration Panel -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <h3 class="text-sm font-black text-white flex items-center justify-between mb-3">
+          <span class="flex items-center gap-2">🗣️ Hands-Free Voice Coach</span>
+          <span class="text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 px-2 py-0.5 rounded">Zero Latency</span>
+        </h3>
+        
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="block text-slate-400 text-[11px] mb-1 font-bold">Voice Pitch & Rate</label>
+            <div class="grid grid-cols-2 gap-2">
+              <input type="range" id="voice-rate" min="0.8" max="1.5" step="0.1" value="1.0" class="accent-grass-500 w-full" title="Speed">
+              <input type="range" id="voice-pitch" min="0.8" max="1.4" step="0.1" value="1.0" class="accent-grass-500 w-full" title="Pitch">
+            </div>
+          </div>
+
+          <button id="btn-test-voice" class="w-full py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg font-bold text-slate-200 transition">
+            Test Audio Cue ("Touch grass and push hard!")
+          </button>
+        </div>
+      </div>
+
+      <!-- Biomechanical Form Standard Card -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+        <h3 class="text-sm font-black text-white mb-2 flex items-center gap-2">
+          <span>📐</span> <span id="form-guide-title">Squat Biomechanics Standard</span>
+        </h3>
+        <p class="text-xs text-slate-400 leading-relaxed" id="form-guide-description">
+          Keep your heels planted. Flex hips and knees until the knee angle breaks 95°. Return to full extension (>160°) for a verified rep.
+        </p>
+        <div class="mt-3 pt-3 border-t border-slate-800 grid grid-cols-2 gap-2 text-center text-xs">
+          <div class="bg-slate-950 p-2 rounded-lg border border-slate-800">
+            <div class="text-[10px] text-slate-500 uppercase font-bold">Inflection Angle</div>
+            <div class="font-black text-grass-400" id="guide-flex-target">&lt; 95°</div>
+          </div>
+          <div class="bg-slate-950 p-2 rounded-lg border border-slate-800">
+            <div class="text-[10px] text-slate-500 uppercase font-bold">Lockout Angle</div>
+            <div class="font-black text-cyan-400" id="guide-ext-target">&gt; 160°</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Outdoor Workout History Feed -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex-1 flex flex-col min-h-[300px]">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-black text-white flex items-center gap-2">
+            <span>📜</span> <span>Recent Sessions</span>
+          </h3>
+          <button id="btn-refresh-history" class="text-slate-400 hover:text-slate-200 text-xs font-bold transition">
+            Refresh
+          </button>
+        </div>
+
+        <div id="workout-history-list" class="space-y-2 flex-1 overflow-y-auto max-h-[350px] pr-1">
+          <!-- Dynamic Log Cards injected by app.js -->
+          <div class="text-xs text-slate-500 text-center py-6">
+            Loading workout logs...
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- "Off-Screen" Mode Fullscreen Overlay (Saves AMOLED Battery Outdoors) -->
+  <div id="off-screen-overlay">
+    <div class="text-center p-6 space-y-4">
+      <div class="text-xs uppercase tracking-widest text-slate-400 font-bold">
+        Ambient Audio Active • Screen Dimmed
+      </div>
+
+      <!-- Current Rep Count -->
+      <div id="off-screen-rep-count" class="text-9xl font-black text-grass-400 leading-none ambient-pulse">
+        0
+      </div>
+
+      <div class="text-lg font-bold text-slate-300 uppercase tracking-wider" id="off-screen-exercise-name">
+        Squats
+      </div>
+
+      <div class="mt-8 pt-6 border-t border-slate-900 text-xs text-slate-500">
+        👆 Tap anywhere on the screen to restore display
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toast-message" class="fixed bottom-6 right-6 bg-slate-800 border border-slate-700 text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-bold transform translate-y-20 opacity-0 transition duration-300 z-50">
+    Workout recorded successfully!
+  </div>
+
+  <!-- Main JavaScript Logic -->
+  <script src="/static/app.js"></script>
+</body>
+</html>
